@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -31,8 +31,6 @@ const queryClient = new QueryClient({
 
 function ProtectedAdminRoute({ children }: { children: ReactNode }) {
   const { isAdmin, isLoading } = useAdminAuth();
-  const [, setLocation] = useLocation();
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0a0f1e] flex items-center justify-center">
@@ -45,8 +43,7 @@ function ProtectedAdminRoute({ children }: { children: ReactNode }) {
   }
 
   if (!isAdmin) {
-    setLocation("/admin/login");
-    return null;
+    return <Redirect to="/admin/login" />;
   }
 
   return <>{children}</>;
