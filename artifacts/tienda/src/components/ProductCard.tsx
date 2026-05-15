@@ -1,8 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { formatCLP } from "@/lib/currency";
-import { Badge } from "@/components/ui/badge";
 import type { Product } from "@workspace/api-client-react";
-import { ShoppingCart, Eye, Zap } from "lucide-react";
+import { ShoppingCart, Eye, Zap, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 
@@ -13,6 +12,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const [hovered, setHovered] = useState(false);
+  const [added, setAdded] = useState(false);
   const [, setLocation] = useLocation();
 
   const discount =
@@ -23,115 +23,145 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const isLowStock = product.stock > 0 && product.stock <= 5;
   const outOfStock = !product.stock || product.stock <= 0;
 
+  const handleAddToCart = () => {
+    if (outOfStock) return;
+    onAddToCart?.(product.id);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1400);
+  };
+
   return (
     <motion.div
-      className="group relative bg-card rounded-2xl overflow-hidden border border-border/50 flex flex-col h-full transition-shadow duration-300 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20"
+      className="group relative bg-card rounded-2xl overflow-hidden border border-border/60 flex flex-col h-full transition-all duration-300 hover:shadow-2xl hover:shadow-black/8 hover:border-primary/25 hover:-translate-y-1"
       onHoverStart={() => setHovered(true)}
       onHoverEnd={() => setHovered(false)}
       data-testid={`card-product-${product.id}`}
     >
-      {/* Image */}
-      <Link href={`/productos/${product.id}`} className="block relative overflow-hidden bg-muted" style={{ aspectRatio: "1/1" }}>
+      {/* Image area */}
+      <Link
+        href={`/productos/${product.id}`}
+        className="block relative overflow-hidden bg-muted/50"
+        style={{ aspectRatio: "1/1" }}
+      >
         {product.imageUrl ? (
           <motion.img
             src={product.imageUrl}
             alt={product.name}
             className="object-cover w-full h-full"
-            animate={{ scale: hovered ? 1.08 : 1 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            animate={{ scale: hovered ? 1.06 : 1 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
-            Sin imagen
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-muted-foreground">
+            <ShoppingCart className="h-10 w-10 opacity-20" />
+            <span className="text-xs">Sin imagen</span>
           </div>
         )}
 
-        {/* Overlay on hover */}
+        {/* Gradient overlay on hover */}
         <motion.div
-          className="absolute inset-0 bg-black/40 flex items-center justify-center gap-3"
+          className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"
           initial={{ opacity: 0 }}
           animate={{ opacity: hovered ? 1 : 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.25 }}
+        />
+
+        {/* Quick-view button — slides up on hover */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 flex justify-center pb-4"
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: hovered ? 1 : 0, y: hovered ? 0 : 12 }}
+          transition={{ duration: 0.22 }}
         >
           <button
-            onClick={(e) => { e.preventDefault(); setLocation(`/productos/${product.id}`); }}
-            className="bg-white text-black rounded-full px-4 py-2 text-xs font-semibold flex items-center gap-1.5 hover:bg-primary hover:text-white transition-colors"
+            onClick={(e) => {
+              e.preventDefault();
+              setLocation(`/productos/${product.id}`);
+            }}
+            className="flex items-center gap-1.5 bg-white text-gray-900 rounded-full px-4 py-1.5 text-xs font-bold shadow-lg hover:bg-primary hover:text-white transition-colors"
             data-testid={`button-view-${product.id}`}
           >
             <Eye className="h-3.5 w-3.5" />
-            Ver producto
+            Ver detalle
           </button>
         </motion.div>
 
-        {/* Badges */}
-        <div className="absolute top-3 left-3 flex flex-col gap-1.5 z-10">
-          {discount > 0 && (
-            <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+        {/* Badges — top left */}
+        <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
+          {discount >= 10 && (
+            <span className="inline-flex items-center bg-red-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow">
               -{discount}%
             </span>
           )}
           {product.featured && !discount && (
-            <span className="bg-primary text-primary-foreground text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Zap className="h-2.5 w-2.5" /> Destacado
+            <span className="inline-flex items-center gap-0.5 bg-primary text-primary-foreground text-[11px] font-bold px-2 py-0.5 rounded-full shadow">
+              <Star className="h-2.5 w-2.5 fill-current" /> Top
             </span>
           )}
         </div>
 
+        {/* Low stock pill — bottom left */}
         {isLowStock && (
-          <div className="absolute bottom-3 left-3 right-3 z-10">
-            <div className="bg-orange-500/90 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-lg text-center">
-              Solo quedan {product.stock} unidades
-            </div>
+          <div className="absolute top-2.5 right-2.5 z-10">
+            <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
+              ¡Últimas {product.stock}!
+            </span>
           </div>
         )}
       </Link>
 
-      {/* Content */}
+      {/* Card body */}
       <div className="flex flex-col flex-1 p-4 gap-3">
-        <div>
-          <Link href={`/productos/${product.id}`}>
-            <h3
-              className="font-semibold text-sm leading-snug line-clamp-2 hover:text-primary transition-colors"
-              data-testid={`text-product-name-${product.id}`}
-            >
-              {product.name}
-            </h3>
-          </Link>
-          {product.sku && (
-            <p className="text-xs text-muted-foreground mt-0.5">SKU: {product.sku}</p>
-          )}
-        </div>
+        <Link href={`/productos/${product.id}`} className="flex-1">
+          <h3
+            className="font-semibold text-sm leading-snug line-clamp-2 hover:text-primary transition-colors group-hover:text-primary/80"
+            data-testid={`text-product-name-${product.id}`}
+          >
+            {product.name}
+          </h3>
+        </Link>
 
         <div className="mt-auto space-y-3">
-          {/* Price */}
-          <div className="flex items-baseline gap-2">
+          {/* Price row */}
+          <div className="flex items-baseline gap-2 flex-wrap">
             <span
-              className="text-xl font-bold text-foreground"
+              className="text-lg font-bold text-foreground"
               data-testid={`text-price-${product.id}`}
             >
               {formatCLP(product.price)}
             </span>
             {product.comparePrice && product.comparePrice > product.price && (
-              <span className="text-sm text-muted-foreground line-through">
+              <span className="text-xs text-muted-foreground line-through">
                 {formatCLP(product.comparePrice)}
               </span>
             )}
           </div>
 
           {/* Add to cart button */}
-          <button
+          <motion.button
             className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
               outOfStock
                 ? "bg-muted text-muted-foreground cursor-not-allowed"
-                : "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 shadow-sm hover:shadow-md hover:shadow-primary/20"
+                : added
+                ? "bg-green-500 text-white"
+                : "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm hover:shadow-md hover:shadow-primary/25"
             }`}
-            onClick={() => !outOfStock && onAddToCart?.(product.id)}
+            whileTap={outOfStock ? {} : { scale: 0.97 }}
+            onClick={handleAddToCart}
             disabled={outOfStock}
             data-testid={`button-add-to-cart-${product.id}`}
           >
-            <ShoppingCart className="h-4 w-4" />
-            {outOfStock ? "Agotado" : "Agregar al carrito"}
-          </button>
+            {outOfStock ? (
+              <>Sin stock</>
+            ) : added ? (
+              <>✓ Agregado</>
+            ) : (
+              <>
+                <ShoppingCart className="h-3.5 w-3.5" />
+                Agregar
+              </>
+            )}
+          </motion.button>
         </div>
       </div>
     </motion.div>
