@@ -6,73 +6,70 @@ import {
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
-  Package,
-  ShoppingCart,
-  TrendingUp,
-  AlertTriangle,
-  ArrowUpRight,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  Truck,
-  BarChart3,
-  Star,
-  Zap,
-  ShoppingBag,
-  Target,
+  Package, ShoppingCart, TrendingUp, AlertTriangle, ArrowUpRight,
+  Clock, CheckCircle2, XCircle, Truck, BarChart3, Star, ShoppingBag, Target,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell,
 } from "recharts";
 
 const STATUS_CONFIG: Record<string, { label: string; dot: string; icon: typeof Clock; color: string }> = {
-  pending:    { label: "Pendiente",  dot: "bg-yellow-500", icon: Clock,         color: "#f59e0b" },
-  processing: { label: "Procesando", dot: "bg-blue-500",   icon: TrendingUp,    color: "#3b82f6" },
-  shipped:    { label: "Enviado",    dot: "bg-purple-500", icon: Truck,         color: "#8b5cf6" },
-  delivered:  { label: "Entregado",  dot: "bg-green-500",  icon: CheckCircle2,  color: "#22c55e" },
-  cancelled:  { label: "Cancelado",  dot: "bg-red-500",    icon: XCircle,       color: "#ef4444" },
+  pending:    { label: "Pendiente",  dot: "bg-yellow-500", icon: Clock,        color: "#f59e0b" },
+  processing: { label: "Procesando", dot: "bg-blue-500",   icon: TrendingUp,   color: "#3b82f6" },
+  shipped:    { label: "Enviado",    dot: "bg-purple-500", icon: Truck,        color: "#8b5cf6" },
+  delivered:  { label: "Entregado",  dot: "bg-green-500",  icon: CheckCircle2, color: "#22c55e" },
+  cancelled:  { label: "Cancelado",  dot: "bg-red-500",    icon: XCircle,      color: "#ef4444" },
 };
 
+/* ── Solid-gradient stat card ── */
 function StatCard({
-  title, value, sub, icon: Icon, color, bg, border, link,
+  title, value, sub, icon: Icon, gradient, iconGlow, link,
 }: {
   title: string; value: string; sub: string; icon: typeof TrendingUp;
-  color: string; bg: string; border: string; link?: string;
+  gradient: string; iconGlow: string; link?: string;
 }) {
-  return (
-    <Card className={`border ${border} ${bg} shadow-none group relative overflow-hidden`}>
-      <CardContent className="p-5">
-        <div className="flex items-start justify-between">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">{title}</p>
-            <p className={`text-2xl font-bold ${color} truncate`}>{value}</p>
-            <p className="text-xs text-muted-foreground mt-1.5 leading-tight">{sub}</p>
-          </div>
-          <div className={`p-2.5 rounded-xl ${bg} border ${border} shrink-0 ml-3`}>
-            <Icon className={`h-5 w-5 ${color}`} />
-          </div>
+  const inner = (
+    <div
+      className="relative rounded-2xl overflow-hidden p-5 flex flex-col gap-3 h-full group"
+      style={{ background: gradient }}
+    >
+      {/* Decorative circle */}
+      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full opacity-20"
+        style={{ background: "rgba(255,255,255,0.3)" }} />
+      <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-10"
+        style={{ background: "rgba(255,255,255,0.5)" }} />
+
+      <div className="relative flex items-start justify-between">
+        <div className="min-w-0">
+          <p className="text-xs font-bold text-white/70 uppercase tracking-widest mb-2">{title}</p>
+          <p className="text-2xl sm:text-3xl font-extrabold text-white truncate">{value}</p>
         </div>
+        <div className="p-3 rounded-2xl shrink-0 ml-3"
+          style={{ background: iconGlow }}>
+          <Icon className="h-5 w-5 text-white" />
+        </div>
+      </div>
+
+      <div className="relative flex items-center justify-between">
+        <p className="text-xs text-white/65 leading-tight">{sub}</p>
         {link && (
-          <Link href={link} className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 flex items-end justify-end p-3 transition-opacity">
-            <span className={`flex items-center gap-0.5 text-xs font-semibold ${color}`}>
-              Ver <ArrowUpRight className="h-3 w-3" />
-            </span>
-          </Link>
+          <span className="flex items-center gap-0.5 text-xs font-bold text-white/80 group-hover:text-white transition-colors">
+            Ver <ArrowUpRight className="h-3 w-3" />
+          </span>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
+  );
+
+  return link ? (
+    <Link href={link} className="block h-full">
+      {inner}
+    </Link>
+  ) : (
+    <div className="h-full">{inner}</div>
   );
 }
 
@@ -89,7 +86,6 @@ function formatShortDate(dateStr: string) {
 
 function StatusPill({ status }: { status: string }) {
   const cfg = STATUS_CONFIG[status] ?? { label: status, dot: "bg-gray-400", icon: Clock, color: "#9ca3af" };
-  const Icon = cfg.icon;
   return (
     <span className="inline-flex items-center gap-1.5 text-xs font-medium">
       <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
@@ -121,9 +117,8 @@ export default function AdminDashboard() {
       title: "Ingresos Totales",
       value: formatCLP(summary?.totalRevenue ?? 0),
       icon: TrendingUp,
-      color: "text-emerald-600",
-      bg: "bg-emerald-50 dark:bg-emerald-950/30",
-      border: "border-emerald-100 dark:border-emerald-900",
+      gradient: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+      iconGlow: "rgba(255,255,255,0.2)",
       sub: summary?.totalOrders ? `${summary.totalOrders} ventas en total` : "Sin ventas aún",
       link: "/admin/pedidos",
     },
@@ -131,9 +126,8 @@ export default function AdminDashboard() {
       title: "Pedidos Pendientes",
       value: String(summary?.pendingOrders ?? 0),
       icon: Clock,
-      color: "text-amber-600",
-      bg: "bg-amber-50 dark:bg-amber-950/30",
-      border: "border-amber-100 dark:border-amber-900",
+      gradient: "linear-gradient(135deg, #d97706 0%, #b45309 100%)",
+      iconGlow: "rgba(255,255,255,0.2)",
       sub: "Requieren atención urgente",
       link: "/admin/pedidos",
     },
@@ -141,41 +135,36 @@ export default function AdminDashboard() {
       title: "Valor Promedio",
       value: formatCLP(summary?.avgOrderValue ?? 0),
       icon: Target,
-      color: "text-blue-600",
-      bg: "bg-blue-50 dark:bg-blue-950/30",
-      border: "border-blue-100 dark:border-blue-900",
+      gradient: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+      iconGlow: "rgba(255,255,255,0.2)",
       sub: "Por pedido",
     },
     {
       title: "Entregas Completadas",
       value: String(summary?.deliveredOrders ?? 0),
       icon: CheckCircle2,
-      color: "text-green-600",
-      bg: "bg-green-50 dark:bg-green-950/30",
-      border: "border-green-100 dark:border-green-900",
+      gradient: "linear-gradient(135deg, #16a34a 0%, #15803d 100%)",
+      iconGlow: "rgba(255,255,255,0.2)",
       sub: `${summary?.totalOrders ? Math.round(((summary?.deliveredOrders ?? 0) / summary.totalOrders) * 100) : 0}% tasa de entrega`,
     },
     {
       title: "Productos Activos",
       value: String(summary?.totalProducts ?? 0),
       icon: Package,
-      color: "text-purple-600",
-      bg: "bg-purple-50 dark:bg-purple-950/30",
-      border: "border-purple-100 dark:border-purple-900",
+      gradient: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
+      iconGlow: "rgba(255,255,255,0.2)",
       sub: `${summary?.lowStockProducts ?? 0} con stock bajo`,
       link: "/admin/productos",
     },
   ];
 
-  // Build pie chart data from ordersByStatus
   const pieData = (summary?.ordersByStatus ?? []).map((s) => ({
     name: STATUS_CONFIG[s.status]?.label ?? s.status,
     value: s.count,
     color: STATUS_CONFIG[s.status]?.color ?? "#9ca3af",
   }));
 
-  // Revenue line chart — show only every 5th label to avoid clutter
-  const chartData = (summary?.revenueByDay ?? []).map((d, i) => ({
+  const chartData = (summary?.revenueByDay ?? []).map((d) => ({
     date: formatShortDate(d.date),
     revenue: d.revenue,
     orders: d.orders,
@@ -207,27 +196,32 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       <div className="space-y-6">
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
             <p className="text-muted-foreground text-sm mt-0.5">
-              Resumen general de tu tienda · {new Date().toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" })}
+              {new Date().toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" })}
             </p>
           </div>
           <div className="flex gap-2">
-            <Link href="/admin/productos" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card text-xs font-semibold hover:bg-muted transition-colors">
+            <Link href="/admin/productos"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card text-xs font-semibold hover:bg-muted transition-colors">
               <Package className="h-3.5 w-3.5" /> Productos
             </Link>
-            <Link href="/admin/pedidos" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity">
+            <Link href="/admin/pedidos"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity">
               <ShoppingBag className="h-3.5 w-3.5" /> Ver pedidos
             </Link>
           </div>
         </div>
 
-        {/* Stat Cards */}
+        {/* Stat Cards — solid gradient backgrounds */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-          {stats.map((s) => <StatCard key={s.title} {...s} />)}
+          {stats.map((s) => (
+            <StatCard key={s.title} {...s} />
+          ))}
         </div>
 
         {/* Revenue Chart + Order Status */}
@@ -265,30 +259,12 @@ export default function AdminDashboard() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      tickLine={false}
-                      axisLine={false}
-                      interval={4}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      tickLine={false}
-                      axisLine={false}
-                      tickFormatter={(v) => v === 0 ? "0" : `$${(v / 1000).toFixed(0)}k`}
-                      width={40}
-                    />
+                    <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false} interval={4} />
+                    <YAxis tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }} tickLine={false} axisLine={false}
+                      tickFormatter={(v) => v === 0 ? "0" : `$${(v / 1000).toFixed(0)}k`} width={40} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Area
-                      type="monotone"
-                      dataKey="revenue"
-                      stroke="hsl(var(--primary))"
-                      strokeWidth={2}
-                      fill="url(#revenueGrad)"
-                      dot={false}
-                      activeDot={{ r: 4, fill: "hsl(var(--primary))" }}
-                    />
+                    <Area type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2}
+                      fill="url(#revenueGrad)" dot={false} activeDot={{ r: 4, fill: "hsl(var(--primary))" }} />
                   </AreaChart>
                 </ResponsiveContainer>
               )}
@@ -311,23 +287,11 @@ export default function AdminDashboard() {
                 <>
                   <ResponsiveContainer width="100%" height={160}>
                     <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={50}
-                        outerRadius={72}
-                        paddingAngle={3}
-                        dataKey="value"
-                      >
-                        {pieData.map((entry, i) => (
-                          <Cell key={i} fill={entry.color} />
-                        ))}
+                      <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={72} paddingAngle={3} dataKey="value">
+                        {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                       </Pie>
-                      <Tooltip
-                        formatter={(value: number, name: string) => [`${value}`, name]}
-                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 11 }}
-                      />
+                      <Tooltip formatter={(value: number, name: string) => [`${value}`, name]}
+                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 11 }} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="mt-2 space-y-1.5">
@@ -349,14 +313,12 @@ export default function AdminDashboard() {
 
         {/* Top Products + Low Stock */}
         <div className="grid gap-6 lg:grid-cols-2">
-          {/* Top Products */}
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base font-semibold flex items-center gap-2">
-                    <Star className="h-4 w-4 text-amber-500" />
-                    Más vendidos
+                    <Star className="h-4 w-4 text-amber-500" /> Más vendidos
                   </CardTitle>
                   <CardDescription>Top 5 productos por unidades</CardDescription>
                 </div>
@@ -385,17 +347,12 @@ export default function AdminDashboard() {
                           <p className="text-sm font-medium truncate">{p.name}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full ${i === 0 ? "bg-amber-400" : "bg-primary/50"}`}
-                                style={{ width: `${pct}%` }}
-                              />
+                              <div className={`h-full rounded-full ${i === 0 ? "bg-amber-400" : "bg-primary/50"}`} style={{ width: `${pct}%` }} />
                             </div>
                             <span className="text-xs text-muted-foreground shrink-0">{p.sales} uds</span>
                           </div>
                         </div>
-                        <div className="text-right shrink-0">
-                          <p className="text-sm font-bold text-emerald-600">{formatCLP(p.revenue)}</p>
-                        </div>
+                        <p className="text-sm font-bold text-emerald-600 shrink-0">{formatCLP(p.revenue)}</p>
                       </div>
                     );
                   })}
@@ -404,7 +361,6 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          {/* Low Stock Alerts */}
           <Card className={summary && summary.lowStockProducts > 0 ? "border-orange-200 dark:border-orange-900" : ""}>
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
@@ -432,25 +388,16 @@ export default function AdminDashboard() {
                   {summary.lowStockItems.map((item) => (
                     <div key={item.id} className="flex items-center gap-3 px-5 py-3">
                       <div className="w-9 h-9 rounded-lg overflow-hidden bg-muted border border-border shrink-0">
-                        {item.imageUrl ? (
-                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
+                        {item.imageUrl
+                          ? <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                          : <div className="w-full h-full flex items-center justify-center"><Package className="h-4 w-4 text-muted-foreground" /></div>}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{item.name}</p>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <div className="flex gap-0.5">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <div
-                                key={i}
-                                className={`w-2 h-1.5 rounded-sm ${i < item.stock ? "bg-orange-400" : "bg-muted"}`}
-                              />
-                            ))}
-                          </div>
+                        <div className="flex gap-0.5 mt-0.5">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <div key={i} className={`w-2 h-1.5 rounded-sm ${i < item.stock ? "bg-orange-400" : "bg-muted"}`} />
+                          ))}
                         </div>
                       </div>
                       <span className={`text-sm font-bold shrink-0 ${item.stock === 0 ? "text-red-600" : "text-orange-500"}`}>
@@ -479,9 +426,7 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="p-0">
             {loadingOrders ? (
-              <div className="p-5 space-y-3">
-                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 rounded-lg" />)}
-              </div>
+              <div className="p-5 space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 rounded-lg" />)}</div>
             ) : !recentOrders || recentOrders.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-14 text-muted-foreground gap-2">
                 <ShoppingCart className="h-10 w-10 opacity-20" />
@@ -512,21 +457,17 @@ export default function AdminDashboard() {
                           <div className="font-medium text-sm">{order.customerName}</div>
                           <div className="text-xs text-muted-foreground">{order.customerEmail}</div>
                         </td>
-                        <td className="px-5 py-3.5">
-                          <StatusPill status={order.status} />
-                        </td>
+                        <td className="px-5 py-3.5"><StatusPill status={order.status} /></td>
                         <td className="px-5 py-3.5 font-bold text-foreground">{formatCLP(order.total)}</td>
                         <td className="px-5 py-3.5 text-xs text-muted-foreground hidden md:table-cell">
                           {order.items?.length ?? 0} producto{(order.items?.length ?? 0) !== 1 ? "s" : ""}
                         </td>
-                        <td className="px-5 py-3.5 text-xs text-muted-foreground whitespace-nowrap hidden lg:table-cell">
+                        <td className="px-5 py-3.5 text-xs text-muted-foreground hidden lg:table-cell">
                           {formatDate(order.createdAt)}
                         </td>
                         <td className="px-5 py-3.5">
-                          <Link
-                            href={`/admin/pedidos/${order.id}`}
-                            className="text-xs font-semibold text-primary hover:underline opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5"
-                          >
+                          <Link href={`/admin/pedidos/${order.id}`}
+                            className="opacity-0 group-hover:opacity-100 text-xs text-primary font-semibold hover:underline transition-opacity flex items-center gap-0.5">
                             Ver <ArrowUpRight className="h-3 w-3" />
                           </Link>
                         </td>
@@ -539,60 +480,6 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Dropshipping Quick Tips */}
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Card className="bg-gradient-to-br from-primary/5 to-primary/0 border-primary/10 shadow-none">
-            <CardContent className="p-4 flex gap-3">
-              <div className="p-2 bg-primary/10 rounded-xl shrink-0 h-fit">
-                <Zap className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="font-semibold text-sm">Pedidos pendientes</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                  Tienes <span className="font-bold text-amber-600">{summary?.pendingOrders ?? 0}</span> pedido{(summary?.pendingOrders ?? 0) !== 1 ? "s" : ""} por procesar en AliExpress.
-                </p>
-                <Link href="/admin/pedidos" className="text-xs text-primary font-semibold hover:underline mt-1.5 inline-flex items-center gap-0.5">
-                  Ir a pedidos <ArrowUpRight className="h-3 w-3" />
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-500/5 to-purple-500/0 border-purple-500/10 shadow-none">
-            <CardContent className="p-4 flex gap-3">
-              <div className="p-2 bg-purple-500/10 rounded-xl shrink-0 h-fit">
-                <Package className="h-4 w-4 text-purple-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-sm">Catálogo activo</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                  <span className="font-bold text-purple-600">{summary?.totalProducts ?? 0}</span> producto{(summary?.totalProducts ?? 0) !== 1 ? "s" : ""} publicado{(summary?.totalProducts ?? 0) !== 1 ? "s" : ""}.
-                  {(summary?.lowStockProducts ?? 0) > 0 && ` ${summary?.lowStockProducts} con stock bajo.`}
-                </p>
-                <Link href="/admin/productos" className="text-xs text-purple-600 font-semibold hover:underline mt-1.5 inline-flex items-center gap-0.5">
-                  Gestionar <ArrowUpRight className="h-3 w-3" />
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-emerald-500/5 to-emerald-500/0 border-emerald-500/10 shadow-none">
-            <CardContent className="p-4 flex gap-3">
-              <div className="p-2 bg-emerald-500/10 rounded-xl shrink-0 h-fit">
-                <TrendingUp className="h-4 w-4 text-emerald-600" />
-              </div>
-              <div>
-                <p className="font-semibold text-sm">Métricas clave</p>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                  Valor promedio <span className="font-bold text-emerald-600">{formatCLP(summary?.avgOrderValue ?? 0)}</span> por pedido.
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Tasa entrega: <span className="font-bold">{summary?.totalOrders ? Math.round(((summary?.deliveredOrders ?? 0) / summary.totalOrders) * 100) : 0}%</span>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </AdminLayout>
   );

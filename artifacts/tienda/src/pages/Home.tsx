@@ -4,22 +4,9 @@ import { useListProducts, useListCategories } from "@workspace/api-client-react"
 import { ProductCard } from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowRight,
-  Zap,
-  Shield,
-  Truck,
-  Headphones,
-  Monitor,
-  Smartphone,
-  Volume2,
-  Cpu,
-  Home,
-  Gamepad2,
-  Star,
-  Tag,
-  ChevronRight,
-  BadgePercent,
-  Package,
+  ArrowRight, Zap, Shield, Truck, Headphones,
+  Monitor, Smartphone, Volume2, Cpu, Home,
+  Gamepad2, Star, Tag, ChevronRight, BadgePercent, Package,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCartSession } from "@/hooks/use-cart-session";
@@ -29,32 +16,28 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
 
 const CATEGORY_ICONS: Record<string, typeof Headphones> = {
-  electronica: Cpu,
-  smartphones: Smartphone,
-  audio: Volume2,
-  computacion: Monitor,
-  hogar: Home,
-  gaming: Gamepad2,
+  electronica: Cpu, smartphones: Smartphone, audio: Volume2,
+  computacion: Monitor, hogar: Home, gaming: Gamepad2,
 };
 
-const CATEGORY_STYLES: Record<string, { bg: string; icon: string; ring: string }> = {
-  electronica: { bg: "bg-cyan-50 hover:bg-cyan-100", icon: "bg-cyan-500 text-white", ring: "hover:ring-cyan-200" },
-  smartphones: { bg: "bg-violet-50 hover:bg-violet-100", icon: "bg-violet-500 text-white", ring: "hover:ring-violet-200" },
-  audio: { bg: "bg-pink-50 hover:bg-pink-100", icon: "bg-pink-500 text-white", ring: "hover:ring-pink-200" },
-  computacion: { bg: "bg-blue-50 hover:bg-blue-100", icon: "bg-blue-500 text-white", ring: "hover:ring-blue-200" },
-  hogar: { bg: "bg-emerald-50 hover:bg-emerald-100", icon: "bg-emerald-500 text-white", ring: "hover:ring-emerald-200" },
-  gaming: { bg: "bg-orange-50 hover:bg-orange-100", icon: "bg-orange-500 text-white", ring: "hover:ring-orange-200" },
+const CATEGORY_STYLES: Record<string, { gradient: string; iconBg: string; border: string }> = {
+  electronica: { gradient: "from-cyan-500/15 to-cyan-600/5",    iconBg: "bg-cyan-500",    border: "border-cyan-200/60 hover:border-cyan-400" },
+  smartphones: { gradient: "from-violet-500/15 to-violet-600/5", iconBg: "bg-violet-500",  border: "border-violet-200/60 hover:border-violet-400" },
+  audio:       { gradient: "from-pink-500/15 to-pink-600/5",     iconBg: "bg-pink-500",    border: "border-pink-200/60 hover:border-pink-400" },
+  computacion: { gradient: "from-blue-500/15 to-blue-600/5",     iconBg: "bg-blue-500",    border: "border-blue-200/60 hover:border-blue-400" },
+  hogar:       { gradient: "from-emerald-500/15 to-emerald-600/5",iconBg: "bg-emerald-500", border: "border-emerald-200/60 hover:border-emerald-400" },
+  gaming:      { gradient: "from-orange-500/15 to-orange-600/5", iconBg: "bg-orange-500",  border: "border-orange-200/60 hover:border-orange-400" },
 };
 
 const features = [
-  { icon: Truck, title: "Envío a todo Chile", desc: "Despacho rápido a cualquier región", color: "text-blue-600", bg: "bg-blue-100" },
-  { icon: Shield, title: "Compra segura", desc: "Tus datos siempre protegidos", color: "text-emerald-600", bg: "bg-emerald-100" },
-  { icon: Headphones, title: "Soporte 7/7", desc: "Atención al cliente todos los días", color: "text-purple-600", bg: "bg-purple-100" },
-  { icon: BadgePercent, title: "Precios únicos", desc: "Directo desde AliExpress", color: "text-orange-600", bg: "bg-orange-100" },
+  { icon: Truck,        title: "Envío a todo Chile", desc: "Despacho rápido a cualquier región", gradient: "from-blue-500 to-blue-600" },
+  { icon: Shield,       title: "Compra segura",      desc: "Tus datos siempre protegidos",       gradient: "from-emerald-500 to-emerald-600" },
+  { icon: Headphones,   title: "Soporte 7/7",        desc: "Atención al cliente todos los días",  gradient: "from-purple-500 to-purple-600" },
+  { icon: BadgePercent, title: "Precios únicos",     desc: "Directo desde AliExpress",            gradient: "from-orange-500 to-orange-600" },
 ];
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
-const fadeUp = { hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0, transition: { duration: 0.38 } } };
+const fadeUp  = { hidden: { opacity: 0, y: 22 }, show: { opacity: 1, y: 0, transition: { duration: 0.38 } } };
 
 export default function HomePage() {
   const { data: featuredProducts, isLoading: loadingFeatured } = useListProducts({ featured: "true", limit: 8 });
@@ -83,21 +66,22 @@ export default function HomePage() {
 
   return (
     <AppLayout>
-      {/* ── HERO ── */}
-      <section className="relative bg-[#080d1a] text-white overflow-hidden min-h-[92vh] flex items-center justify-center">
-        {/* BG image */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&h=900&fit=crop&q=80"
-            alt="Tecnología"
-            className="w-full h-full object-cover opacity-20"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#080d1a]/60 via-[#080d1a]/40 to-[#080d1a]" />
-        </div>
 
-        {/* Decorative glows */}
-        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-primary/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
+      {/* ── HERO — Pure CSS gradient, no external image ── */}
+      <section className="relative overflow-hidden min-h-[90vh] flex items-center justify-center"
+        style={{ background: "linear-gradient(135deg, #080d1a 0%, #0d1a35 40%, #0f1c40 65%, #130d2e 100%)" }}
+      >
+        {/* Animated glows */}
+        <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)" }} />
+        <div className="absolute bottom-[-10%] right-[-5%] w-[450px] h-[450px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(139,92,246,0.16) 0%, transparent 70%)" }} />
+        <div className="absolute top-[30%] right-[20%] w-[300px] h-[300px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%)" }} />
+
+        {/* Grid overlay */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
+          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
 
         <div className="container relative z-10 mx-auto px-6 py-24 text-center">
           <motion.div
@@ -107,16 +91,17 @@ export default function HomePage() {
             className="max-w-3xl mx-auto"
           >
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/30 text-primary rounded-full px-4 py-1.5 text-sm font-semibold mb-8">
+            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold mb-8 text-blue-300"
+              style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.3)" }}>
               <Zap className="h-3.5 w-3.5" />
               Tecnología premium · Envío a todo Chile
             </div>
 
             {/* Headline */}
-            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold leading-[1.08] tracking-tight mb-6">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold leading-[1.08] tracking-tight mb-6 text-white">
               La mejor tech
               <br />
-              <span className="bg-gradient-to-r from-primary via-blue-400 to-violet-400 bg-clip-text text-transparent">
+              <span style={{ background: "linear-gradient(90deg, #60a5fa, #818cf8, #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 al mejor precio
               </span>
             </h1>
@@ -126,24 +111,18 @@ export default function HomePage() {
             </p>
 
             {/* CTAs */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mb-12">
-              <Button
-                size="lg"
-                asChild
-                className="h-13 px-9 rounded-2xl font-bold text-base shadow-xl shadow-primary/30 hover:shadow-primary/50 hover:scale-105 transition-all duration-200"
-                data-testid="button-shop-now"
-              >
+            <div className="flex flex-wrap items-center justify-center gap-4 mb-14">
+              <Button size="lg" asChild className="h-13 px-9 rounded-2xl font-bold text-base"
+                style={{ boxShadow: "0 8px 24px rgba(59,130,246,0.4)" }}
+                data-testid="button-shop-now">
                 <Link href="/productos">
                   Ver catálogo <ArrowRight className="ml-2 h-4 w-4" />
                 </Link>
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                asChild
-                className="h-13 px-9 rounded-2xl font-bold text-base bg-white/5 border-white/20 text-white hover:bg-white/12 hover:text-white hover:border-white/35 hover:scale-105 transition-all duration-200"
-              >
-                <Link href="/productos?featured=true">
+              <Button size="lg" variant="outline" asChild
+                className="h-13 px-9 rounded-2xl font-bold text-base text-white hover:text-white"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.18)" }}>
+                <Link href="/productos">
                   <Tag className="mr-2 h-4 w-4" />
                   Ver ofertas
                 </Link>
@@ -154,7 +133,7 @@ export default function HomePage() {
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400">
               <div className="flex items-center gap-2">
                 <div className="flex">
-                  {[1, 2, 3, 4, 5].map((i) => (
+                  {[1,2,3,4,5].map((i) => (
                     <Star key={i} className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
                   ))}
                 </div>
@@ -187,19 +166,19 @@ export default function HomePage() {
       </section>
 
       {/* ── FEATURES BAR ── */}
-      <section className="bg-card border-b border-border shadow-sm">
+      <section className="bg-white border-b border-slate-100 shadow-sm">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-border">
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 divide-slate-100">
             {features.map((f) => {
               const Icon = f.icon;
               return (
                 <div key={f.title} className="flex items-center gap-4 px-6 py-5">
-                  <div className={`p-2.5 rounded-xl shrink-0 ${f.bg}`}>
-                    <Icon className={`h-5 w-5 ${f.color}`} />
+                  <div className={`p-2.5 rounded-xl shrink-0 bg-gradient-to-br ${f.gradient} shadow-sm`}>
+                    <Icon className="h-5 w-5 text-white" />
                   </div>
                   <div>
-                    <p className="font-bold text-sm text-foreground">{f.title}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5 hidden sm:block">{f.desc}</p>
+                    <p className="font-bold text-sm text-slate-800">{f.title}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 hidden sm:block">{f.desc}</p>
                   </div>
                 </div>
               );
@@ -228,19 +207,19 @@ export default function HomePage() {
             {categories.map((category) => {
               const Icon = CATEGORY_ICONS[category.slug] ?? Cpu;
               const style = CATEGORY_STYLES[category.slug] ?? {
-                bg: "bg-slate-50 hover:bg-slate-100",
-                icon: "bg-slate-500 text-white",
-                ring: "hover:ring-slate-200",
+                gradient: "from-slate-500/15 to-slate-600/5",
+                iconBg: "bg-slate-500",
+                border: "border-slate-200/60 hover:border-slate-400",
               };
               return (
                 <motion.div key={category.id} variants={fadeUp}>
                   <Link
                     href={`/productos?category=${category.slug}`}
-                    className={`group flex flex-col items-center gap-3 p-5 rounded-2xl ${style.bg} ring-2 ring-transparent ${style.ring} transition-all duration-200 hover:-translate-y-1 hover:shadow-lg`}
+                    className={`group flex flex-col items-center gap-3 p-5 rounded-2xl bg-gradient-to-br ${style.gradient} border ${style.border} transition-all duration-200 hover:-translate-y-1 hover:shadow-lg`}
                     data-testid={`link-category-${category.slug}`}
                   >
-                    <div className={`p-3.5 rounded-2xl ${style.icon} shadow-md group-hover:scale-110 transition-transform duration-200`}>
-                      <Icon className="h-5 w-5" />
+                    <div className={`p-3.5 rounded-2xl ${style.iconBg} shadow-md group-hover:scale-110 transition-transform duration-200`}>
+                      <Icon className="h-5 w-5 text-white" />
                     </div>
                     <div className="text-center">
                       <p className="text-xs font-bold leading-tight text-foreground">{category.name}</p>
@@ -255,7 +234,7 @@ export default function HomePage() {
       )}
 
       {/* ── FEATURED PRODUCTS ── */}
-      <section className="py-20 bg-gradient-to-b from-muted/40 to-background border-t border-border">
+      <section className="py-20 bg-gradient-to-b from-slate-50 to-white border-t border-slate-100">
         <div className="container mx-auto px-6">
           <div className="flex items-end justify-between mb-10">
             <div>
@@ -264,9 +243,7 @@ export default function HomePage() {
               <p className="text-muted-foreground text-sm mt-1.5">Los favoritos de nuestros clientes</p>
             </div>
             <Button variant="ghost" asChild className="hidden sm:flex items-center gap-1.5 font-bold text-sm rounded-xl">
-              <Link href="/productos">
-                Ver todos <ChevronRight className="h-4 w-4" />
-              </Link>
+              <Link href="/productos">Ver todos <ChevronRight className="h-4 w-4" /></Link>
             </Button>
           </div>
 
@@ -312,14 +289,16 @@ export default function HomePage() {
 
       {/* ── PROMO BANNER ── */}
       <section className="py-10 container mx-auto px-6">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary via-blue-600 to-violet-600 text-white">
-          {/* decorative circles */}
-          <div className="absolute -top-20 -right-20 w-72 h-72 bg-white/10 rounded-full blur-2xl pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-white/5 rounded-full blur-xl pointer-events-none" />
-
+        <div className="relative overflow-hidden rounded-3xl text-white"
+          style={{ background: "linear-gradient(135deg, #2563eb 0%, #4f46e5 50%, #7c3aed 100%)" }}>
+          <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full blur-2xl pointer-events-none"
+            style={{ background: "rgba(255,255,255,0.08)" }} />
+          <div className="absolute -bottom-10 -left-10 w-48 h-48 rounded-full blur-xl pointer-events-none"
+            style={{ background: "rgba(255,255,255,0.05)" }} />
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 px-10 py-12">
             <div className="text-center md:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-bold mb-4">
+              <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold mb-4"
+                style={{ background: "rgba(255,255,255,0.2)" }}>
                 <Zap className="h-3 w-3" /> Oferta especial
               </div>
               <h2 className="text-3xl md:text-4xl font-bold leading-tight mb-3">
@@ -329,11 +308,9 @@ export default function HomePage() {
                 En productos seleccionados de tecnología y gadgets. Solo por tiempo limitado.
               </p>
             </div>
-            <Button
-              size="lg"
-              asChild
-              className="shrink-0 bg-white text-primary hover:bg-white/90 font-bold rounded-2xl px-10 h-13 shadow-2xl hover:scale-105 transition-all duration-200 text-base"
-            >
+            <Button size="lg" asChild
+              className="shrink-0 font-bold rounded-2xl px-10 h-13 text-base text-primary hover:scale-105 transition-all duration-200"
+              style={{ background: "white", boxShadow: "0 8px 24px rgba(0,0,0,0.2)" }}>
               <Link href="/productos">Ver ofertas <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
@@ -342,7 +319,7 @@ export default function HomePage() {
 
       {/* ── NEW PRODUCTS ── */}
       {allProducts && allProducts.length > 0 && (
-        <section className="py-20 bg-gradient-to-b from-muted/40 to-background border-t border-border">
+        <section className="py-20 bg-gradient-to-b from-slate-50 to-white border-t border-slate-100">
           <div className="container mx-auto px-6">
             <div className="flex items-end justify-between mb-10">
               <div>
@@ -351,9 +328,7 @@ export default function HomePage() {
                 <p className="text-muted-foreground text-sm mt-1.5">Los últimos incorporados al catálogo</p>
               </div>
               <Button variant="ghost" asChild className="hidden sm:flex items-center gap-1.5 font-bold text-sm rounded-xl">
-                <Link href="/productos">
-                  Ver todos <ChevronRight className="h-4 w-4" />
-                </Link>
+                <Link href="/productos">Ver todos <ChevronRight className="h-4 w-4" /></Link>
               </Button>
             </div>
             {loadingAll ? (
