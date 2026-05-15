@@ -1,0 +1,20 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "L3SoE0KuXBbBqzezXS0sM"
+uri = "file://artifacts/tienda/public/hero-banner.png"
+type = "image"
+title = "Modern tech store hero banner"
+
+[[generated]]
+id = "2i31S76XAx5BIf6jYMnjx"
+uri = "file://artifacts/tienda/public/product-earbuds.png"
+type = "image"
+title = "Wireless earbuds product shot"
+
+[[generated]]
+id = "zkpnDf0ecYJcWrDuGUg0w"
+uri = "file://artifacts/tienda/public/product-keyboard.png"
+type = "image"
+title = "Mechanical keyboard product shot"
