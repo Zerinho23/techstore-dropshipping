@@ -248,7 +248,7 @@ export default function HomePage() {
           </div>
 
           {loadingFeatured ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="space-y-3">
                   <Skeleton className="aspect-square w-full rounded-2xl" />
@@ -264,7 +264,7 @@ export default function HomePage() {
               initial="hidden"
               whileInView="show"
               viewport={{ once: true, amount: 0.05 }}
-              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5"
+              className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"
             >
               {featuredProducts.map((product) => (
                 <motion.div key={product.id} variants={fadeUp}>
