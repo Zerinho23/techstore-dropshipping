@@ -194,7 +194,7 @@ export default function Products() {
 
           {/* ── Product Grid ── */}
           {isLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
               {Array.from({ length: 10 }).map((_, i) => (
                 <div key={i} className="space-y-3">
                   <Skeleton className="aspect-square w-full rounded-2xl" />
@@ -229,7 +229,7 @@ export default function Products() {
                 variants={stagger}
                 initial="hidden"
                 animate="show"
-                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5"
+                className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5"
               >
                 {products.map((product) => (
                   <motion.div key={product.id} variants={fadeScale}>
