@@ -4,7 +4,7 @@ import { sql, eq, desc } from "drizzle-orm";
 
 const router: IRouter = Router();
 
-router.get("/dashboard/summary", async (_req, res): Promise<void> => {
+router.get("/summary", async (_req, res): Promise<void> => {
   const [totalOrdersRow] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(ordersTable);
@@ -55,7 +55,7 @@ router.get("/dashboard/summary", async (_req, res): Promise<void> => {
   });
 });
 
-router.get("/dashboard/recent-orders", async (_req, res): Promise<void> => {
+router.get("/recent-orders", async (_req, res): Promise<void> => {
   const orders = await db
     .select()
     .from(ordersTable)

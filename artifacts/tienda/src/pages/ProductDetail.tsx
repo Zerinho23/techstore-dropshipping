@@ -15,7 +15,7 @@ import { ProductCard } from "@/components/ProductCard";
 export default function ProductDetail({ params }: { params: { id: string } }) {
   const productId = parseInt(params.id, 10);
   const { data: product, isLoading } = useGetProduct(productId);
-  const { data: relatedProducts } = useListProducts({ category: product?.categoryId ? product.category?.slug : undefined, limit: 4 });
+  const { data: relatedProducts } = useListProducts({ limit: 4 });
   
   const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
@@ -101,7 +101,7 @@ export default function ProductDetail({ params }: { params: { id: string } }) {
           {/* Info */}
           <div className="flex flex-col">
             <div className="mb-2 text-sm text-primary font-medium">
-              {product.category?.name || "Categoría"}
+              {"Categoría"}
             </div>
             <h1 className="text-3xl md:text-4xl font-display font-bold leading-tight mb-4">
               {product.name}
