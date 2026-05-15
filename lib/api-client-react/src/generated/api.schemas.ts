@@ -158,13 +158,37 @@ export type DashboardSummaryTopProductsItem = {
   revenue: number;
 };
 
+export type DashboardSummaryRevenueByDayItem = {
+  date: string;
+  revenue: number;
+  orders: number;
+};
+
+export type DashboardSummaryOrdersByStatusItem = {
+  status: string;
+  count: number;
+};
+
+export type DashboardSummaryLowStockItemsItem = {
+  id: number;
+  name: string;
+  stock: number;
+  /** @nullable */
+  imageUrl?: string | null;
+};
+
 export interface DashboardSummary {
   totalOrders: number;
   totalRevenue: number;
   pendingOrders: number;
   totalProducts: number;
   lowStockProducts: number;
+  avgOrderValue: number;
+  deliveredOrders: number;
   topProducts: DashboardSummaryTopProductsItem[];
+  revenueByDay: DashboardSummaryRevenueByDayItem[];
+  ordersByStatus: DashboardSummaryOrdersByStatusItem[];
+  lowStockItems: DashboardSummaryLowStockItemsItem[];
 }
 
 export type ListProductsParams = {

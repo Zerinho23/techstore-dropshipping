@@ -619,7 +619,7 @@ components:
 
     DashboardSummary:
       type: object
-      required: [totalOrders, totalRevenue, pendingOrders, totalProducts, lowStockProducts, topProducts]
+      required: [totalOrders, totalRevenue, pendingOrders, totalProducts, lowStockProducts, topProducts, avgOrderValue, deliveredOrders, revenueByDay, ordersByStatus, lowStockItems]
       properties:
         totalOrders:
           type: integer
@@ -630,6 +630,10 @@ components:
         totalProducts:
           type: integer
         lowStockProducts:
+          type: integer
+        avgOrderValue:
+          type: number
+        deliveredOrders:
           type: integer
         topProducts:
           type: array
@@ -645,3 +649,39 @@ components:
                 type: integer
               revenue:
                 type: number
+        revenueByDay:
+          type: array
+          items:
+            type: object
+            required: [date, revenue, orders]
+            properties:
+              date:
+                type: string
+              revenue:
+                type: number
+              orders:
+                type: integer
+        ordersByStatus:
+          type: array
+          items:
+            type: object
+            required: [status, count]
+            properties:
+              status:
+                type: string
+              count:
+                type: integer
+        lowStockItems:
+          type: array
+          items:
+            type: object
+            required: [id, name, stock]
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              stock:
+                type: integer
+              imageUrl:
+                type: ["string", "null"]

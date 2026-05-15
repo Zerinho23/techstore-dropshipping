@@ -5,6 +5,9 @@
  * Dropshipping store API
  * OpenAPI spec version: 0.1.0
  */
+import type { DashboardSummaryLowStockItemsItem } from './dashboardSummaryLowStockItemsItem';
+import type { DashboardSummaryOrdersByStatusItem } from './dashboardSummaryOrdersByStatusItem';
+import type { DashboardSummaryRevenueByDayItem } from './dashboardSummaryRevenueByDayItem';
 import type { DashboardSummaryTopProductsItem } from './dashboardSummaryTopProductsItem';
 
 export interface DashboardSummary {
@@ -13,5 +16,10 @@ export interface DashboardSummary {
   pendingOrders: number;
   totalProducts: number;
   lowStockProducts: number;
+  avgOrderValue: number;
+  deliveredOrders: number;
   topProducts: DashboardSummaryTopProductsItem[];
+  revenueByDay: DashboardSummaryRevenueByDayItem[];
+  ordersByStatus: DashboardSummaryOrdersByStatusItem[];
+  lowStockItems: DashboardSummaryLowStockItemsItem[];
 }

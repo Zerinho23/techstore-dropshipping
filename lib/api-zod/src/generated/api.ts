@@ -401,11 +401,28 @@ export const GetDashboardSummaryResponse = zod.object({
   "pendingOrders": zod.number(),
   "totalProducts": zod.number(),
   "lowStockProducts": zod.number(),
+  "avgOrderValue": zod.number(),
+  "deliveredOrders": zod.number(),
   "topProducts": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "sales": zod.number(),
   "revenue": zod.number()
+})),
+  "revenueByDay": zod.array(zod.object({
+  "date": zod.string(),
+  "revenue": zod.number(),
+  "orders": zod.number()
+})),
+  "ordersByStatus": zod.array(zod.object({
+  "status": zod.string(),
+  "count": zod.number()
+})),
+  "lowStockItems": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "stock": zod.number(),
+  "imageUrl": zod.string().nullish()
 }))
 })
 

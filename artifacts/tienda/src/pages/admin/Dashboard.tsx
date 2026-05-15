@@ -5,7 +5,6 @@ import {
 } from "@workspace/api-client-react";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Package,
   ShoppingCart,
@@ -16,12 +15,17 @@ import {
   CheckCircle2,
   XCircle,
   Truck,
+  BarChart3,
+  Star,
+  Zap,
+  ShoppingBag,
+  Target,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "wouter";
 import {
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -33,35 +37,80 @@ import {
   Legend,
 } from "recharts";
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: typeof Clock }> = {
-  pending: { label: "Pendiente", color: "bg-yellow-100 text-yellow-800 border-yellow-200", icon: Clock },
-  processing: { label: "Procesando", color: "bg-blue-100 text-blue-800 border-blue-200", icon: TrendingUp },
-  shipped: { label: "Enviado", color: "bg-purple-100 text-purple-800 border-purple-200", icon: Truck },
-  delivered: { label: "Entregado", color: "bg-green-100 text-green-800 border-green-200", icon: CheckCircle2 },
-  cancelled: { label: "Cancelado", color: "bg-red-100 text-red-800 border-red-200", icon: XCircle },
+const STATUS_CONFIG: Record<string, { label: string; dot: string; icon: typeof Clock; color: string }> = {
+  pending:    { label: "Pendiente",  dot: "bg-yellow-500", icon: Clock,         color: "#f59e0b" },
+  processing: { label: "Procesando", dot: "bg-blue-500",   icon: TrendingUp,    color: "#3b82f6" },
+  shipped:    { label: "Enviado",    dot: "bg-purple-500", icon: Truck,         color: "#8b5cf6" },
+  delivered:  { label: "Entregado",  dot: "bg-green-500",  icon: CheckCircle2,  color: "#22c55e" },
+  cancelled:  { label: "Cancelado",  dot: "bg-red-500",    icon: XCircle,       color: "#ef4444" },
 };
 
-const PIE_COLORS = ["#f59e0b", "#3b82f6", "#8b5cf6", "#22c55e", "#ef4444"];
-
-function StatusBadge({ status }: { status: string }) {
-  const cfg = STATUS_CONFIG[status] ?? { label: status, color: "bg-gray-100 text-gray-700 border-gray-200", icon: Clock };
-  const Icon = cfg.icon;
+function StatCard({
+  title, value, sub, icon: Icon, color, bg, border, link,
+}: {
+  title: string; value: string; sub: string; icon: typeof TrendingUp;
+  color: string; bg: string; border: string; link?: string;
+}) {
   return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full border ${cfg.color}`}>
-      <Icon className="h-3 w-3" />
-      {cfg.label}
-    </span>
+    <Card className={`border ${border} ${bg} shadow-none group relative overflow-hidden`}>
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">{title}</p>
+            <p className={`text-2xl font-bold ${color} truncate`}>{value}</p>
+            <p className="text-xs text-muted-foreground mt-1.5 leading-tight">{sub}</p>
+          </div>
+          <div className={`p-2.5 rounded-xl ${bg} border ${border} shrink-0 ml-3`}>
+            <Icon className={`h-5 w-5 ${color}`} />
+          </div>
+        </div>
+        {link && (
+          <Link href={link} className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 flex items-end justify-end p-3 transition-opacity">
+            <span className={`flex items-center gap-0.5 text-xs font-semibold ${color}`}>
+              Ver <ArrowUpRight className="h-3 w-3" />
+            </span>
+          </Link>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("es-CL", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
+    day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
   });
 }
+
+function formatShortDate(dateStr: string) {
+  const d = new Date(dateStr);
+  return `${d.getDate()}/${d.getMonth() + 1}`;
+}
+
+function StatusPill({ status }: { status: string }) {
+  const cfg = STATUS_CONFIG[status] ?? { label: status, dot: "bg-gray-400", icon: Clock, color: "#9ca3af" };
+  const Icon = cfg.icon;
+  return (
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium">
+      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+      {cfg.label}
+    </span>
+  );
+}
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-card border border-border rounded-xl shadow-lg px-3 py-2 text-xs">
+      <p className="font-semibold text-foreground mb-1">{label}</p>
+      {payload.map((p: any) => (
+        <p key={p.name} style={{ color: p.color }} className="font-medium">
+          {p.name === "revenue" ? formatCLP(p.value) : `${p.value} pedidos`}
+        </p>
+      ))}
+    </div>
+  );
+};
 
 export default function AdminDashboard() {
   const { data: summary, isLoading } = useGetDashboardSummary();
@@ -72,28 +121,39 @@ export default function AdminDashboard() {
       title: "Ingresos Totales",
       value: formatCLP(summary?.totalRevenue ?? 0),
       icon: TrendingUp,
-      color: "text-green-600",
-      bg: "bg-green-50 dark:bg-green-950/30",
-      border: "border-green-100 dark:border-green-900",
-      sub: "Ventas acumuladas",
-    },
-    {
-      title: "Pedidos Totales",
-      value: String(summary?.totalOrders ?? 0),
-      icon: ShoppingCart,
-      color: "text-blue-600",
-      bg: "bg-blue-50 dark:bg-blue-950/30",
-      border: "border-blue-100 dark:border-blue-900",
-      sub: "Órdenes recibidas",
+      color: "text-emerald-600",
+      bg: "bg-emerald-50 dark:bg-emerald-950/30",
+      border: "border-emerald-100 dark:border-emerald-900",
+      sub: summary?.totalOrders ? `${summary.totalOrders} ventas en total` : "Sin ventas aún",
+      link: "/admin/pedidos",
     },
     {
       title: "Pedidos Pendientes",
       value: String(summary?.pendingOrders ?? 0),
       icon: Clock,
-      color: "text-yellow-600",
-      bg: "bg-yellow-50 dark:bg-yellow-950/30",
-      border: "border-yellow-100 dark:border-yellow-900",
-      sub: "Requieren atención",
+      color: "text-amber-600",
+      bg: "bg-amber-50 dark:bg-amber-950/30",
+      border: "border-amber-100 dark:border-amber-900",
+      sub: "Requieren atención urgente",
+      link: "/admin/pedidos",
+    },
+    {
+      title: "Valor Promedio",
+      value: formatCLP(summary?.avgOrderValue ?? 0),
+      icon: Target,
+      color: "text-blue-600",
+      bg: "bg-blue-50 dark:bg-blue-950/30",
+      border: "border-blue-100 dark:border-blue-900",
+      sub: "Por pedido",
+    },
+    {
+      title: "Entregas Completadas",
+      value: String(summary?.deliveredOrders ?? 0),
+      icon: CheckCircle2,
+      color: "text-green-600",
+      bg: "bg-green-50 dark:bg-green-950/30",
+      border: "border-green-100 dark:border-green-900",
+      sub: `${summary?.totalOrders ? Math.round(((summary?.deliveredOrders ?? 0) / summary.totalOrders) * 100) : 0}% tasa de entrega`,
     },
     {
       title: "Productos Activos",
@@ -103,41 +163,42 @@ export default function AdminDashboard() {
       bg: "bg-purple-50 dark:bg-purple-950/30",
       border: "border-purple-100 dark:border-purple-900",
       sub: `${summary?.lowStockProducts ?? 0} con stock bajo`,
+      link: "/admin/productos",
     },
   ];
 
-  // Build pie chart data from recent orders
-  const statusCounts: Record<string, number> = {};
-  recentOrders?.forEach((o) => {
-    statusCounts[o.status] = (statusCounts[o.status] ?? 0) + 1;
-  });
-  const pieData = Object.entries(statusCounts).map(([status, count]) => ({
-    name: STATUS_CONFIG[status]?.label ?? status,
-    value: count,
+  // Build pie chart data from ordersByStatus
+  const pieData = (summary?.ordersByStatus ?? []).map((s) => ({
+    name: STATUS_CONFIG[s.status]?.label ?? s.status,
+    value: s.count,
+    color: STATUS_CONFIG[s.status]?.color ?? "#9ca3af",
   }));
 
-  // Build bar chart for top products
-  const barData = (summary?.topProducts ?? []).map((p) => ({
-    name: p.name.length > 20 ? p.name.slice(0, 18) + "…" : p.name,
-    ventas: p.sales,
-    ingresos: p.revenue,
+  // Revenue line chart — show only every 5th label to avoid clutter
+  const chartData = (summary?.revenueByDay ?? []).map((d, i) => ({
+    date: formatShortDate(d.date),
+    revenue: d.revenue,
+    orders: d.orders,
+    fullDate: d.date,
   }));
 
   if (isLoading) {
     return (
       <AdminLayout>
         <div className="space-y-6">
-          <div>
-            <Skeleton className="h-8 w-48 mb-2" />
-            <Skeleton className="h-4 w-72" />
+          <Skeleton className="h-8 w-52" />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {[1, 2, 3, 4, 5].map((i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
           </div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-32 rounded-2xl" />)}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <Skeleton className="lg:col-span-2 h-72 rounded-2xl" />
+            <Skeleton className="h-72 rounded-2xl" />
           </div>
           <div className="grid gap-6 lg:grid-cols-2">
-            <Skeleton className="h-80 rounded-2xl" />
-            <Skeleton className="h-80 rounded-2xl" />
+            <Skeleton className="h-64 rounded-2xl" />
+            <Skeleton className="h-64 rounded-2xl" />
           </div>
+          <Skeleton className="h-80 rounded-2xl" />
         </div>
       </AdminLayout>
     );
@@ -145,142 +206,271 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Resumen general de tu tienda de dropshipping.
+            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground text-sm mt-0.5">
+              Resumen general de tu tienda · {new Date().toLocaleDateString("es-CL", { weekday: "long", day: "numeric", month: "long" })}
             </p>
           </div>
-          <Link
-            href="/admin/pedidos"
-            className="hidden sm:flex items-center gap-2 text-sm font-medium text-primary hover:underline"
-          >
-            Ver todos los pedidos <ArrowUpRight className="h-4 w-4" />
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/admin/productos" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-card text-xs font-semibold hover:bg-muted transition-colors">
+              <Package className="h-3.5 w-3.5" /> Productos
+            </Link>
+            <Link href="/admin/pedidos" className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition-opacity">
+              <ShoppingBag className="h-3.5 w-3.5" /> Ver pedidos
+            </Link>
+          </div>
         </div>
 
         {/* Stat Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={stat.title} className={`border ${stat.border} ${stat.bg} shadow-none`}>
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
-                        {stat.title}
-                      </p>
-                      <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                      <p className="text-xs text-muted-foreground mt-1">{stat.sub}</p>
-                    </div>
-                    <div className={`p-2.5 rounded-xl ${stat.bg} border ${stat.border}`}>
-                      <Icon className={`h-5 w-5 ${stat.color}`} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {stats.map((s) => <StatCard key={s.title} {...s} />)}
         </div>
 
-        {/* Charts Row */}
-        <div className="grid gap-6 lg:grid-cols-2">
-          {/* Top Products Bar Chart */}
-          <Card>
+        {/* Revenue Chart + Order Status */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Revenue Area Chart */}
+          <Card className="lg:col-span-2">
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold">Productos más vendidos</CardTitle>
-              <CardDescription>Unidades vendidas por producto</CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base font-semibold">Ingresos — últimos 30 días</CardTitle>
+                  <CardDescription>Evolución de ventas diarias en CLP</CardDescription>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">Total 30 días</p>
+                  <p className="text-sm font-bold text-emerald-600">
+                    {formatCLP(summary?.revenueByDay?.reduce((a, b) => a + b.revenue, 0) ?? 0)}
+                  </p>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              {barData.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-52 text-muted-foreground text-sm gap-2">
-                  <Package className="h-8 w-8 opacity-30" />
-                  No hay ventas registradas aún.
+              {chartData.every((d) => d.revenue === 0) ? (
+                <div className="flex flex-col items-center justify-center h-52 text-muted-foreground gap-2">
+                  <BarChart3 className="h-10 w-10 opacity-20" />
+                  <p className="text-sm">No hay ventas registradas todavía.</p>
+                  <p className="text-xs opacity-60">Los datos aparecerán aquí cuando recibas pedidos.</p>
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height={220}>
-                  <BarChart data={barData} margin={{ top: 5, right: 10, left: 0, bottom: 40 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <AreaChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis
-                      dataKey="name"
+                      dataKey="date"
                       tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
-                      angle={-30}
-                      textAnchor="end"
-                      interval={0}
+                      tickLine={false}
+                      axisLine={false}
+                      interval={4}
                     />
-                    <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
-                    <Tooltip
-                      formatter={(value: number) => [`${value} uds`, "Ventas"]}
-                      contentStyle={{
-                        background: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: 8,
-                        fontSize: 12,
-                      }}
+                    <YAxis
+                      tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(v) => v === 0 ? "0" : `$${(v / 1000).toFixed(0)}k`}
+                      width={40}
                     />
-                    <Bar dataKey="ventas" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-                  </BarChart>
+                    <Tooltip content={<CustomTooltip />} />
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      fill="url(#revenueGrad)"
+                      dot={false}
+                      activeDot={{ r: 4, fill: "hsl(var(--primary))" }}
+                    />
+                  </AreaChart>
                 </ResponsiveContainer>
               )}
             </CardContent>
           </Card>
 
-          {/* Order Status Pie Chart */}
+          {/* Order Status Pie */}
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-base font-semibold">Estado de pedidos</CardTitle>
-              <CardDescription>Distribución de los últimos 10 pedidos</CardDescription>
+              <CardDescription>Distribución actual por estado</CardDescription>
             </CardHeader>
             <CardContent>
               {pieData.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-52 text-muted-foreground text-sm gap-2">
-                  <ShoppingCart className="h-8 w-8 opacity-30" />
-                  No hay pedidos registrados aún.
+                <div className="flex flex-col items-center justify-center h-52 text-muted-foreground gap-2">
+                  <ShoppingCart className="h-10 w-10 opacity-20" />
+                  <p className="text-sm">Sin pedidos aún.</p>
                 </div>
               ) : (
-                <ResponsiveContainer width="100%" height={220}>
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={55}
-                      outerRadius={85}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
-                      {pieData.map((_, i) => (
-                        <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(value: number, name: string) => [`${value} pedidos`, name]}
-                      contentStyle={{
-                        background: "hsl(var(--card))",
-                        border: "1px solid hsl(var(--border))",
-                        borderRadius: 8,
-                        fontSize: 12,
-                      }}
-                    />
-                    <Legend iconType="circle" iconSize={10} wrapperStyle={{ fontSize: 12 }} />
-                  </PieChart>
-                </ResponsiveContainer>
+                <>
+                  <ResponsiveContainer width="100%" height={160}>
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={72}
+                        paddingAngle={3}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, i) => (
+                          <Cell key={i} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number, name: string) => [`${value}`, name]}
+                        contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 11 }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="mt-2 space-y-1.5">
+                    {pieData.map((entry) => (
+                      <div key={entry.name} className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-2">
+                          <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: entry.color }} />
+                          <span className="text-muted-foreground">{entry.name}</span>
+                        </span>
+                        <span className="font-semibold">{entry.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* Recent Orders Table */}
+        {/* Top Products + Low Stock */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Top Products */}
+          <Card>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base font-semibold flex items-center gap-2">
+                    <Star className="h-4 w-4 text-amber-500" />
+                    Más vendidos
+                  </CardTitle>
+                  <CardDescription>Top 5 productos por unidades</CardDescription>
+                </div>
+                <Link href="/admin/productos" className="text-xs text-primary hover:underline flex items-center gap-1">
+                  Ver todos <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {!summary?.topProducts || summary.topProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
+                  <Package className="h-8 w-8 opacity-20" />
+                  <p className="text-sm">Sin ventas registradas.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {summary.topProducts.map((p, i) => {
+                    const maxSales = summary.topProducts[0]?.sales ?? 1;
+                    const pct = Math.round((p.sales / maxSales) * 100);
+                    return (
+                      <div key={p.id} className="flex items-center gap-3 px-5 py-3">
+                        <span className={`text-sm font-bold w-5 shrink-0 ${i === 0 ? "text-amber-500" : "text-muted-foreground"}`}>
+                          {i + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{p.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${i === 0 ? "bg-amber-400" : "bg-primary/50"}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-muted-foreground shrink-0">{p.sales} uds</span>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-bold text-emerald-600">{formatCLP(p.revenue)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Low Stock Alerts */}
+          <Card className={summary && summary.lowStockProducts > 0 ? "border-orange-200 dark:border-orange-900" : ""}>
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base font-semibold flex items-center gap-2">
+                    <AlertTriangle className={`h-4 w-4 ${summary && summary.lowStockProducts > 0 ? "text-orange-500" : "text-muted-foreground"}`} />
+                    Alertas de inventario
+                  </CardTitle>
+                  <CardDescription>Productos con menos de 5 unidades</CardDescription>
+                </div>
+                <Link href="/admin/productos" className="text-xs text-primary hover:underline flex items-center gap-1">
+                  Gestionar <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {!summary?.lowStockItems || summary.lowStockItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-10 text-muted-foreground gap-2">
+                  <CheckCircle2 className="h-8 w-8 text-green-500 opacity-50" />
+                  <p className="text-sm font-medium text-green-600">¡Stock en buen estado!</p>
+                  <p className="text-xs text-muted-foreground">Todos los productos tienen stock suficiente.</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {summary.lowStockItems.map((item) => (
+                    <div key={item.id} className="flex items-center gap-3 px-5 py-3">
+                      <div className="w-9 h-9 rounded-lg overflow-hidden bg-muted border border-border shrink-0">
+                        {item.imageUrl ? (
+                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{item.name}</p>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <div className="flex gap-0.5">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <div
+                                key={i}
+                                className={`w-2 h-1.5 rounded-sm ${i < item.stock ? "bg-orange-400" : "bg-muted"}`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                      <span className={`text-sm font-bold shrink-0 ${item.stock === 0 ? "text-red-600" : "text-orange-500"}`}>
+                        {item.stock === 0 ? "Agotado" : `${item.stock} uds`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Orders */}
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-base font-semibold">Pedidos Recientes</CardTitle>
-                <CardDescription>Últimos pedidos recibidos en la tienda</CardDescription>
+                <CardTitle className="text-base font-semibold">Pedidos recientes</CardTitle>
+                <CardDescription>Últimos 10 pedidos recibidos</CardDescription>
               </div>
               <Link href="/admin/pedidos" className="text-xs text-primary font-medium hover:underline flex items-center gap-1">
                 Ver todos <ArrowUpRight className="h-3 w-3" />
@@ -289,55 +479,55 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="p-0">
             {loadingOrders ? (
-              <div className="p-6 space-y-3">
+              <div className="p-5 space-y-3">
                 {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 rounded-lg" />)}
               </div>
             ) : !recentOrders || recentOrders.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground text-sm gap-2">
-                <ShoppingCart className="h-8 w-8 opacity-30" />
-                No hay pedidos recientes.
+              <div className="flex flex-col items-center justify-center py-14 text-muted-foreground gap-2">
+                <ShoppingCart className="h-10 w-10 opacity-20" />
+                <p className="text-sm">No hay pedidos aún.</p>
+                <p className="text-xs opacity-60">Los pedidos de tus clientes aparecerán aquí.</p>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border bg-muted/30 text-xs text-muted-foreground font-semibold uppercase tracking-wide">
-                      <th className="text-left px-6 py-3">#</th>
-                      <th className="text-left px-6 py-3">Cliente</th>
-                      <th className="text-left px-6 py-3">Estado</th>
-                      <th className="text-left px-6 py-3">Total</th>
-                      <th className="text-left px-6 py-3">Fecha</th>
-                      <th className="text-left px-6 py-3"></th>
+                    <tr className="border-b border-border bg-muted/30 text-[11px] text-muted-foreground font-semibold uppercase tracking-wide">
+                      <th className="text-left px-5 py-3">Pedido</th>
+                      <th className="text-left px-5 py-3">Cliente</th>
+                      <th className="text-left px-5 py-3">Estado</th>
+                      <th className="text-left px-5 py-3">Total</th>
+                      <th className="text-left px-5 py-3 hidden md:table-cell">Items</th>
+                      <th className="text-left px-5 py-3 hidden lg:table-cell">Fecha</th>
+                      <th className="px-5 py-3" />
                     </tr>
                   </thead>
                   <tbody>
-                    {recentOrders.map((order, i) => (
-                      <tr
-                        key={order.id}
-                        className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors"
-                      >
-                        <td className="px-6 py-3.5 font-mono text-xs text-muted-foreground">
-                          #{order.id}
+                    {recentOrders.map((order) => (
+                      <tr key={order.id} className="border-b border-border/50 last:border-0 hover:bg-muted/20 transition-colors group">
+                        <td className="px-5 py-3.5">
+                          <span className="font-mono text-xs text-muted-foreground">#{String(order.id).padStart(5, "0")}</span>
                         </td>
-                        <td className="px-6 py-3.5">
-                          <div className="font-medium text-foreground">{order.customerName}</div>
+                        <td className="px-5 py-3.5">
+                          <div className="font-medium text-sm">{order.customerName}</div>
                           <div className="text-xs text-muted-foreground">{order.customerEmail}</div>
                         </td>
-                        <td className="px-6 py-3.5">
-                          <StatusBadge status={order.status} />
+                        <td className="px-5 py-3.5">
+                          <StatusPill status={order.status} />
                         </td>
-                        <td className="px-6 py-3.5 font-semibold text-foreground">
-                          {formatCLP(order.total)}
+                        <td className="px-5 py-3.5 font-bold text-foreground">{formatCLP(order.total)}</td>
+                        <td className="px-5 py-3.5 text-xs text-muted-foreground hidden md:table-cell">
+                          {order.items?.length ?? 0} producto{(order.items?.length ?? 0) !== 1 ? "s" : ""}
                         </td>
-                        <td className="px-6 py-3.5 text-xs text-muted-foreground whitespace-nowrap">
+                        <td className="px-5 py-3.5 text-xs text-muted-foreground whitespace-nowrap hidden lg:table-cell">
                           {formatDate(order.createdAt)}
                         </td>
-                        <td className="px-6 py-3.5">
+                        <td className="px-5 py-3.5">
                           <Link
                             href={`/admin/pedidos/${order.id}`}
-                            className="text-xs font-medium text-primary hover:underline"
+                            className="text-xs font-semibold text-primary hover:underline opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5"
                           >
-                            Ver
+                            Ver <ArrowUpRight className="h-3 w-3" />
                           </Link>
                         </td>
                       </tr>
@@ -349,30 +539,60 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        {/* Low stock warning */}
-        {summary && summary.lowStockProducts > 0 && (
-          <Card className="border-orange-200 bg-orange-50 dark:bg-orange-950/20 dark:border-orange-900 shadow-none">
-            <CardContent className="p-5 flex items-start gap-4">
-              <div className="mt-0.5 p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
+        {/* Dropshipping Quick Tips */}
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card className="bg-gradient-to-br from-primary/5 to-primary/0 border-primary/10 shadow-none">
+            <CardContent className="p-4 flex gap-3">
+              <div className="p-2 bg-primary/10 rounded-xl shrink-0 h-fit">
+                <Zap className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <p className="font-semibold text-orange-800 dark:text-orange-300 text-sm">
-                  {summary.lowStockProducts} producto{summary.lowStockProducts > 1 ? "s" : ""} con stock bajo
+                <p className="font-semibold text-sm">Pedidos pendientes</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  Tienes <span className="font-bold text-amber-600">{summary?.pendingOrders ?? 0}</span> pedido{(summary?.pendingOrders ?? 0) !== 1 ? "s" : ""} por procesar en AliExpress.
                 </p>
-                <p className="text-xs text-orange-700 dark:text-orange-400 mt-0.5">
-                  Revisa tu inventario y actualiza los productos antes de que se agoten.
-                </p>
-                <Link
-                  href="/admin/productos"
-                  className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-orange-700 dark:text-orange-300 hover:underline"
-                >
-                  Ir a gestión de productos <ArrowUpRight className="h-3 w-3" />
+                <Link href="/admin/pedidos" className="text-xs text-primary font-semibold hover:underline mt-1.5 inline-flex items-center gap-0.5">
+                  Ir a pedidos <ArrowUpRight className="h-3 w-3" />
                 </Link>
               </div>
             </CardContent>
           </Card>
-        )}
+
+          <Card className="bg-gradient-to-br from-purple-500/5 to-purple-500/0 border-purple-500/10 shadow-none">
+            <CardContent className="p-4 flex gap-3">
+              <div className="p-2 bg-purple-500/10 rounded-xl shrink-0 h-fit">
+                <Package className="h-4 w-4 text-purple-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm">Catálogo activo</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  <span className="font-bold text-purple-600">{summary?.totalProducts ?? 0}</span> producto{(summary?.totalProducts ?? 0) !== 1 ? "s" : ""} publicado{(summary?.totalProducts ?? 0) !== 1 ? "s" : ""}.
+                  {(summary?.lowStockProducts ?? 0) > 0 && ` ${summary?.lowStockProducts} con stock bajo.`}
+                </p>
+                <Link href="/admin/productos" className="text-xs text-purple-600 font-semibold hover:underline mt-1.5 inline-flex items-center gap-0.5">
+                  Gestionar <ArrowUpRight className="h-3 w-3" />
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-emerald-500/5 to-emerald-500/0 border-emerald-500/10 shadow-none">
+            <CardContent className="p-4 flex gap-3">
+              <div className="p-2 bg-emerald-500/10 rounded-xl shrink-0 h-fit">
+                <TrendingUp className="h-4 w-4 text-emerald-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm">Métricas clave</p>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                  Valor promedio <span className="font-bold text-emerald-600">{formatCLP(summary?.avgOrderValue ?? 0)}</span> por pedido.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Tasa entrega: <span className="font-bold">{summary?.totalOrders ? Math.round(((summary?.deliveredOrders ?? 0) / summary.totalOrders) * 100) : 0}%</span>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </AdminLayout>
   );
