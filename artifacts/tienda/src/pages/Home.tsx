@@ -53,13 +53,15 @@ const CATEGORY_ICONS: Record<string, typeof Headphones> = {
   computacion: Monitor, hogar: Home, gaming: Gamepad2,
 };
 
-const CATEGORY_STYLES: Record<string, { gradient: string; iconBg: string; border: string }> = {
-  electronica: { gradient: "from-cyan-500/15 to-cyan-600/5",    iconBg: "bg-cyan-500",    border: "border-cyan-200/60 hover:border-cyan-400" },
-  smartphones: { gradient: "from-violet-500/15 to-violet-600/5", iconBg: "bg-violet-500",  border: "border-violet-200/60 hover:border-violet-400" },
-  audio:       { gradient: "from-pink-500/15 to-pink-600/5",     iconBg: "bg-pink-500",    border: "border-pink-200/60 hover:border-pink-400" },
-  computacion: { gradient: "from-blue-500/15 to-blue-600/5",     iconBg: "bg-blue-500",    border: "border-blue-200/60 hover:border-blue-400" },
-  hogar:       { gradient: "from-emerald-500/15 to-emerald-600/5",iconBg: "bg-emerald-500", border: "border-emerald-200/60 hover:border-emerald-400" },
-  gaming:      { gradient: "from-orange-500/15 to-orange-600/5", iconBg: "bg-orange-500",  border: "border-orange-200/60 hover:border-orange-400" },
+const CATEGORY_STYLES: Record<string, {
+  cardBg: string; iconGrad: string; glowColor: string; textColor: string; badgeBg: string;
+}> = {
+  electronica: { cardBg: "rgba(6,182,212,0.07)",   iconGrad: "linear-gradient(135deg,#06b6d4,#0891b2)", glowColor: "rgba(6,182,212,0.35)",  textColor: "#0e7490", badgeBg: "rgba(6,182,212,0.12)"  },
+  smartphones: { cardBg: "rgba(139,92,246,0.07)",  iconGrad: "linear-gradient(135deg,#8b5cf6,#7c3aed)", glowColor: "rgba(139,92,246,0.35)", textColor: "#6d28d9", badgeBg: "rgba(139,92,246,0.12)" },
+  audio:       { cardBg: "rgba(236,72,153,0.07)",  iconGrad: "linear-gradient(135deg,#ec4899,#db2777)", glowColor: "rgba(236,72,153,0.35)", textColor: "#be185d", badgeBg: "rgba(236,72,153,0.12)" },
+  computacion: { cardBg: "rgba(59,130,246,0.07)",  iconGrad: "linear-gradient(135deg,#3b82f6,#2563eb)", glowColor: "rgba(59,130,246,0.35)",  textColor: "#1d4ed8", badgeBg: "rgba(59,130,246,0.12)"  },
+  hogar:       { cardBg: "rgba(16,185,129,0.07)",  iconGrad: "linear-gradient(135deg,#10b981,#059669)", glowColor: "rgba(16,185,129,0.35)",  textColor: "#047857", badgeBg: "rgba(16,185,129,0.12)"  },
+  gaming:      { cardBg: "rgba(249,115,22,0.07)",  iconGrad: "linear-gradient(135deg,#f97316,#ea580c)", glowColor: "rgba(249,115,22,0.35)",  textColor: "#c2410c", badgeBg: "rgba(249,115,22,0.12)"  },
 };
 
 const features = [
@@ -311,57 +313,106 @@ export default function HomePage() {
 
       {/* ── CATEGORIES ── */}
       {categories && categories.length > 0 && (
-        <section className="py-20 container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4 }}
-            className="text-center mb-10"
-          >
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Explorar</p>
-            <h2 className="text-3xl font-bold tracking-tight">Compra por categoría</h2>
-            <p className="text-muted-foreground mt-2 max-w-md mx-auto text-sm">
-              Encuentra exactamente lo que buscas navegando por nuestras categorías
-            </p>
-          </motion.div>
-          <motion.div
-            variants={stagger}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.15 }}
-            className="grid grid-cols-3 sm:grid-cols-6 gap-3"
-          >
-            {categories.map((category) => {
-              const Icon = CATEGORY_ICONS[category.slug] ?? Cpu;
-              const style = CATEGORY_STYLES[category.slug] ?? {
-                gradient: "from-slate-500/15 to-slate-600/5",
-                iconBg: "bg-slate-500",
-                border: "border-slate-200/60 hover:border-slate-400",
-              };
-              return (
-                <motion.div key={category.id} variants={fadeUp} whileHover={{ y: -5, transition: { type: "spring", stiffness: 400, damping: 18 } }}>
-                  <Link
-                    href={`/productos?category=${category.slug}`}
-                    className={`group flex flex-col items-center gap-3 p-5 rounded-2xl bg-gradient-to-br ${style.gradient} border ${style.border} transition-all duration-200 hover:shadow-lg`}
-                    data-testid={`link-category-${category.slug}`}
+        <section className="py-20 bg-white border-t border-slate-100">
+          <div className="container mx-auto px-6">
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="text-center mb-12"
+            >
+              <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Explorar</p>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Compra por categoría</h2>
+              <p className="text-muted-foreground mt-3 max-w-md mx-auto text-sm">
+                Encuentra exactamente lo que buscas entre nuestras categorías
+              </p>
+            </motion.div>
+
+            <motion.div
+              variants={stagger}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.1 }}
+              className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4"
+            >
+              {categories.map((category, i) => {
+                const Icon = CATEGORY_ICONS[category.slug] ?? Cpu;
+                const s = CATEGORY_STYLES[category.slug] ?? {
+                  cardBg: "rgba(100,116,139,0.07)",
+                  iconGrad: "linear-gradient(135deg,#64748b,#475569)",
+                  glowColor: "rgba(100,116,139,0.3)",
+                  textColor: "#334155",
+                  badgeBg: "rgba(100,116,139,0.12)",
+                };
+                return (
+                  <motion.div
+                    key={category.id}
+                    variants={fadeUp}
+                    custom={i}
+                    whileHover={{ y: -8, transition: { type: "spring", stiffness: 360, damping: 22 } }}
                   >
-                    <motion.div
-                      className={`p-3.5 rounded-2xl ${style.iconBg} shadow-md`}
-                      whileHover={{ rotate: [0, -8, 8, 0], scale: 1.1 }}
-                      transition={{ duration: 0.4 }}
+                    <Link
+                      href={`/productos?category=${category.slug}`}
+                      className="group relative flex flex-col items-center text-center rounded-2xl overflow-hidden"
+                      style={{
+                        background: s.cardBg,
+                        border: "1.5px solid rgba(0,0,0,0.06)",
+                        height: "180px",
+                        padding: "24px 16px 20px",
+                        transition: "box-shadow 0.25s ease, border-color 0.25s ease",
+                      }}
+                      data-testid={`link-category-${category.slug}`}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.boxShadow = `0 12px 32px ${s.glowColor}`;
+                        (e.currentTarget as HTMLElement).style.borderColor = s.textColor + "55";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.boxShadow = "none";
+                        (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,0,0,0.06)";
+                      }}
                     >
-                      <Icon className="h-5 w-5 text-white" />
-                    </motion.div>
-                    <div className="text-center">
-                      <p className="text-xs font-bold leading-tight text-foreground">{category.name}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{category.productCount} productos</p>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+                      {/* Top accent line */}
+                      <div
+                        className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
+                        style={{ background: s.iconGrad }}
+                      />
+
+                      {/* Icon */}
+                      <motion.div
+                        className="shrink-0 flex items-center justify-center rounded-2xl mb-4 shadow-lg"
+                        style={{
+                          width: 56, height: 56,
+                          background: s.iconGrad,
+                          boxShadow: `0 6px 18px ${s.glowColor}`,
+                        }}
+                        whileHover={{ scale: 1.12, rotate: 5 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 14 }}
+                      >
+                        <Icon className="h-6 w-6 text-white" />
+                      </motion.div>
+
+                      {/* Name — always 2-line height */}
+                      <div
+                        className="font-bold text-sm leading-tight line-clamp-2 text-slate-800 w-full"
+                        style={{ minHeight: "2.4rem" }}
+                      >
+                        {category.name}
+                      </div>
+
+                      {/* Count badge */}
+                      <div
+                        className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                        style={{ background: s.badgeBg, color: s.textColor }}
+                      >
+                        {category.productCount} producto{category.productCount !== 1 ? "s" : ""}
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+          </div>
         </section>
       )}
 
