@@ -1,19 +1,14 @@
 import { useLocation, Link } from "wouter";
 import {
-  ShoppingCart,
-  Search,
-  Menu,
-  X,
-  Zap,
-  ChevronDown,
-  LayoutDashboard,
+  ShoppingCart, Search, Menu, X, Zap, ChevronDown,
+  LayoutDashboard, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCartSession } from "@/hooks/use-cart-session";
 import { useGetCart, useListCategories } from "@workspace/api-client-react";
 import { getGetCartQueryKey } from "@workspace/api-client-react";
 import { useAdminAuth } from "@/hooks/use-admin-auth";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -27,9 +22,12 @@ export function Navbar() {
   const { data: categories } = useListCategories();
   const { isAdmin } = useAdminAuth();
 
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen]   = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen]   = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [scrolled, setScrolled]       = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const itemCount = cart?.itemCount ?? 0;
 
@@ -42,7 +40,31 @@ export function Navbar() {
   useEffect(() => {
     setMobileOpen(false);
     setCatalogOpen(false);
+    setSearchOpen(false);
   }, [location]);
+
+  useEffect(() => {
+    if (searchOpen) {
+      setTimeout(() => searchInputRef.current?.focus(), 80);
+    } else {
+      setSearchQuery("");
+    }
+  }, [searchOpen]);
+
+  // Close search on Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSearchOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      setLocation(`/productos?q=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+    }
+  };
 
   return (
     <>
@@ -75,7 +97,6 @@ export function Navbar() {
               Inicio
             </Link>
 
-            {/* Catálogo dropdown */}
             <div className="relative" onMouseLeave={() => setCatalogOpen(false)}>
               <button
                 onMouseEnter={() => setCatalogOpen(true)}
@@ -128,15 +149,15 @@ export function Navbar() {
 
           {/* Right Actions */}
           <div className="flex items-center gap-1">
-            {/* Search */}
+            {/* Search toggle */}
             <Button
               variant="ghost"
               size="icon"
               className="hidden md:flex text-muted-foreground hover:text-foreground"
-              onClick={() => setLocation("/productos")}
+              onClick={() => setSearchOpen(!searchOpen)}
               aria-label="Buscar"
             >
-              <Search className="h-5 w-5" />
+              {searchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
             </Button>
 
             {/* Admin link */}
@@ -188,6 +209,43 @@ export function Navbar() {
             </button>
           </div>
         </div>
+
+        {/* Search bar (desktop) — slides in below header */}
+        <AnimatePresence>
+          {searchOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden border-t border-border bg-background/98 backdrop-blur"
+            >
+              <form onSubmit={handleSearchSubmit} className="container mx-auto px-4 py-3 flex items-center gap-3">
+                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar productos, marcas, categorías..."
+                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+                {searchQuery && (
+                  <button
+                    type="submit"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 hover:bg-primary/15 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    Buscar <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                <button type="button" onClick={() => setSearchOpen(false)}
+                  className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+                  <X className="h-4 w-4" />
+                </button>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       {/* Mobile Menu */}
@@ -200,6 +258,24 @@ export function Navbar() {
             className="md:hidden fixed top-16 left-0 right-0 z-40 bg-background border-b border-border shadow-xl overflow-hidden"
           >
             <nav className="container mx-auto px-4 py-4 flex flex-col gap-1">
+              {/* Mobile search */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (searchQuery.trim()) setLocation(`/productos?q=${encodeURIComponent(searchQuery.trim())}`);
+                }}
+                className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-muted mb-1"
+              >
+                <Search className="h-4 w-4 text-muted-foreground shrink-0" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar productos..."
+                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                />
+              </form>
+
               <Link href="/" className="flex items-center gap-2 px-3 py-3 rounded-xl hover:bg-muted transition-colors font-medium">
                 Inicio
               </Link>
@@ -216,6 +292,13 @@ export function Navbar() {
                   <span className="text-xs bg-muted px-2 py-0.5 rounded-full">{cat.productCount}</span>
                 </Link>
               ))}
+              <div className="h-px bg-border my-2" />
+              <Link href="/seguimiento" className="flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-muted transition-colors text-sm text-muted-foreground">
+                Rastrear pedido
+              </Link>
+              <Link href="/faq" className="flex items-center gap-2 px-3 py-2.5 rounded-xl hover:bg-muted transition-colors text-sm text-muted-foreground">
+                Preguntas frecuentes
+              </Link>
               <div className="h-px bg-border my-2" />
               <Link
                 href={isAdmin ? "/admin" : "/admin/login"}

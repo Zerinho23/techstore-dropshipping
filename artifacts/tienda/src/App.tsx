@@ -13,6 +13,10 @@ import ProductDetail from "@/pages/ProductDetail";
 import Cart from "@/pages/Cart";
 import Checkout from "@/pages/Checkout";
 import Confirmation from "@/pages/Confirmation";
+import Tracking from "@/pages/Tracking";
+import FAQ from "@/pages/FAQ";
+import Shipping from "@/pages/Shipping";
+import Legal from "@/pages/Legal";
 
 import AdminLogin from "@/pages/admin/Login";
 import AdminDashboard from "@/pages/admin/Dashboard";
@@ -41,18 +45,14 @@ function ProtectedAdminRoute({ children }: { children: ReactNode }) {
       </div>
     );
   }
-
-  if (!isAdmin) {
-    return <Redirect to="/admin/login" />;
-  }
-
+  if (!isAdmin) return <Redirect to="/admin/login" />;
   return <>{children}</>;
 }
 
 function Router() {
   return (
     <Switch>
-      {/* Storefront Routes */}
+      {/* Storefront */}
       <Route path="/" component={Home} />
       <Route path="/productos" component={Products} />
       <Route path="/productos/:id" component={ProductDetail} />
@@ -60,10 +60,15 @@ function Router() {
       <Route path="/checkout" component={Checkout} />
       <Route path="/confirmacion/:orderId" component={Confirmation} />
 
-      {/* Admin Login */}
-      <Route path="/admin/login" component={AdminLogin} />
+      {/* Support pages */}
+      <Route path="/seguimiento" component={Tracking} />
+      <Route path="/faq" component={FAQ} />
+      <Route path="/envios" component={Shipping} />
+      <Route path="/terminos" component={Legal} />
+      <Route path="/privacidad" component={Legal} />
 
-      {/* Protected Admin Routes */}
+      {/* Admin */}
+      <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin">
         {() => <ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>}
       </Route>

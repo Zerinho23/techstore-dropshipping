@@ -1,30 +1,53 @@
 import { Link } from "wouter";
 import { Zap, Mail, Phone, MapPin, ArrowUpRight, Shield, Truck, RefreshCcw } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const categories = [
   { name: "Audio & Auriculares", slug: "audio" },
-  { name: "Smartphones", slug: "smartphones" },
-  { name: "Computación", slug: "computacion" },
-  { name: "Gaming", slug: "gaming" },
-  { name: "Electrónica", slug: "electronica" },
-  { name: "Hogar Inteligente", slug: "hogar" },
+  { name: "Smartphones",         slug: "smartphones" },
+  { name: "Computación",         slug: "computacion" },
+  { name: "Gaming",              slug: "gaming" },
+  { name: "Electrónica",         slug: "electronica" },
+  { name: "Hogar Inteligente",   slug: "hogar" },
 ];
 
 const support = [
-  { name: "Preguntas Frecuentes", href: "#" },
-  { name: "Envíos y Devoluciones", href: "#" },
-  { name: "Seguimiento de pedido", href: "#" },
-  { name: "Términos de Servicio", href: "#" },
-  { name: "Política de Privacidad", href: "#" },
+  { name: "Preguntas Frecuentes",  href: "/faq" },
+  { name: "Envíos y Devoluciones", href: "/envios" },
+  { name: "Seguimiento de pedido", href: "/seguimiento" },
+  { name: "Términos de Servicio",  href: "/terminos" },
+  { name: "Política de Privacidad",href: "/privacidad" },
 ];
 
 const guarantees = [
-  { icon: Shield, label: "Compra 100% segura" },
-  { icon: Truck, label: "Envío a todo Chile" },
-  { icon: RefreshCcw, label: "Devoluciones fáciles" },
+  { icon: Shield,      label: "Compra 100% segura" },
+  { icon: Truck,       label: "Envío a todo Chile" },
+  { icon: RefreshCcw,  label: "Devoluciones fáciles" },
 ];
 
 export function Footer() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleNewsletter = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.includes("@")) {
+      toast({ variant: "destructive", title: "Email inválido", description: "Ingresa un correo válido." });
+      return;
+    }
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setEmail("");
+      toast({
+        title: "¡Suscripción exitosa!",
+        description: "Te avisaremos de las mejores ofertas antes que nadie.",
+      });
+    }, 800);
+  };
+
   return (
     <footer className="bg-[#080d1a] text-slate-400 mt-auto">
       {/* Guarantee strip */}
@@ -61,11 +84,13 @@ export function Footer() {
               Tu tienda de tecnología de confianza en Chile. Gadgets, periféricos y accesorios seleccionados al mejor precio.
             </p>
             <div className="space-y-2.5 text-sm">
-              <a href="mailto:contacto@techstore.cl" className="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors">
+              <a href="mailto:contacto@techstore.cl"
+                className="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors">
                 <Mail className="h-4 w-4 text-primary shrink-0" />
                 contacto@techstore.cl
               </a>
-              <a href="tel:+56912345678" className="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors">
+              <a href="tel:+56912345678"
+                className="flex items-center gap-2.5 text-slate-400 hover:text-white transition-colors">
                 <Phone className="h-4 w-4 text-primary shrink-0" />
                 +56 9 1234 5678
               </a>
@@ -112,22 +137,29 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter / CTA */}
+          {/* Newsletter */}
           <div>
             <h4 className="text-sm font-bold text-white uppercase tracking-widest mb-5">Ofertas exclusivas</h4>
             <p className="text-sm text-slate-400 mb-4 leading-relaxed">
               Recibe alertas de descuentos y nuevos productos antes que nadie.
             </p>
-            <div className="flex flex-col gap-2">
+            <form onSubmit={handleNewsletter} className="flex flex-col gap-2">
               <input
                 type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
+                required
                 className="w-full bg-white/5 border border-white/10 text-sm text-white placeholder:text-slate-500 rounded-xl px-4 py-2.5 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/30 transition-all"
               />
-              <button className="w-full bg-primary text-primary-foreground text-sm font-semibold rounded-xl py-2.5 hover:bg-primary/90 transition-colors">
-                Suscribirme
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary text-primary-foreground text-sm font-semibold rounded-xl py-2.5 hover:bg-primary/90 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {loading ? "Suscribiendo..." : "Suscribirme"}
               </button>
-            </div>
+            </form>
             <p className="text-[11px] text-slate-600 mt-2">Sin spam. Cancela cuando quieras.</p>
           </div>
         </div>
